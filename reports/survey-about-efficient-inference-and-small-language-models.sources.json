@@ -1,0 +1,26 @@
+[
+  {
+    "n": 1,
+    "id": "2407.09276",
+    "url": "https://arxiv.org/abs/2407.09276",
+    "title": "H2O-Danube3 Technical Report",
+    "date": "2024-07-12",
+    "source": "arxiv"
+  },
+  {
+    "n": 2,
+    "id": "2502.14305",
+    "url": "https://huggingface.co/papers/2502.14305",
+    "title": "Scaling Down, Serving Fast: Compressing and Deploying Efficient LLMs for Recommendation Systems",
+    "date": "2025-10-26",
+    "source": "hf-search"
+  },
+  {
+    "n": 3,
+    "id": "N/A",
+    "url": "https://www.mdpi.com/2504-2289/9/7/189",
+    "title": "State of the Art and Future Directions of Small Language Models",
+    "date": "2025-07-21",
+    "source": "web"
+  }
+]

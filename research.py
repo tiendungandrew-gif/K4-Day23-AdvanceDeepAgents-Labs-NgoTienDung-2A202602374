@@ -238,8 +238,44 @@ def main(topic):
                     {"messages": [{"role": "user", "content": prompt}]},
                     config={"recursion_limit": 1000},
                 )
-                elapsed = time.monotonic() - start_time
                 messages = result.get("messages", []) if isinstance(result, dict) else []
+
+                # Verification loop for 3 source families (RUBRIC 2.2)
+                for _ in range(2):
+                    sources_bytes = download(backend, [SOURCES_PATH]).get(SOURCES_PATH)
+                    if sources_bytes and sources_bytes.strip():
+                        try:
+                            s_list = json.loads(sources_bytes.decode("utf-8", errors="replace"))
+                            if isinstance(s_list, list):
+                                families = {s.get("source") for s in s_list if isinstance(s, dict) and s.get("source")}
+                                for s in s_list:
+                                    if isinstance(s, dict):
+                                        u = s.get("url", "")
+                                        if "arxiv.org" in u:
+                                            families.add("arxiv")
+                                        elif "huggingface.co/papers/" in u:
+                                            families.add("hf-search")
+                                if len(families & {"arxiv", "hf-daily", "hf-search", "web"}) < 3:
+                                    fix_prompt = (
+                                        f"CORRECTION REQUIRED FOR RUBRIC 2.2: {SOURCES_PATH} currently only has "
+                                        f"{len(families)} source families ({sorted(families)}). You MUST have >= 3 "
+                                        f"families among arxiv, hf-daily, hf-search, and web. "
+                                        f"Immediately delegate to researcher subagents using task to find sources from the missing families, "
+                                        f"add citations [n] to the body of {REPORT_PATH}, and re-run python3 {FINALIZER_PATH} "
+                                        f"and python3 {VALIDATOR_PATH} until OK!"
+                                    )
+                                    res_fix = agent.invoke(
+                                        {"messages": [{"role": "user", "content": fix_prompt}]},
+                                        config={"recursion_limit": 1000},
+                                    )
+                                    if isinstance(res_fix, dict) and "messages" in res_fix:
+                                        messages.extend(res_fix["messages"])
+                                    continue
+                        except Exception:
+                            pass
+                    break
+
+                elapsed = time.monotonic() - start_time
                 saved_report = save_outputs(backend, topic, messages, elapsed, model_name)
                 print(f"SUCCESS: Report saved to {saved_report}")
                 return 0
