@@ -154,14 +154,29 @@ def save_outputs(backend, topic, messages, elapsed, model_name, reports_dir=REPO
     if not isinstance(sources_data, list) or len(sources_data) == 0:
         raise RuntimeError("sources.json must be a non-empty list of source objects")
 
+    report_text = report_bytes.decode("utf-8")
     for idx, item in enumerate(sources_data, start=1):
         if isinstance(item, dict):
             item["n"] = idx
             url = str(item.get("url") or "")
-            if "arxiv.org/abs/" in url:
+            if "arxiv.org" in url:
+                old_url = url
+                arxiv_m = re.search(r"arxiv\.org/(?:abs|html|pdf)/([0-9]+\.[0-9]+)", url)
+                if arxiv_m:
+                    new_url = f"https://arxiv.org/abs/{arxiv_m.group(1)}"
+                    item["url"] = new_url
+                    if old_url != new_url:
+                        report_text = report_text.replace(old_url, new_url)
                 item["source"] = "arxiv"
+                report_text = re.sub(
+                    rf"(\[{item['n']}\][^.\n]+)\.\s*(?:web|arxiv)\.\s*https?://\S+",
+                    rf"\1. arxiv. {item['url']}",
+                    report_text,
+                )
             elif "huggingface.co/papers/" in url and item.get("source") not in ("hf-daily", "hf-search"):
                 item["source"] = "hf-search"
+
+    report_bytes = report_text.encode("utf-8")
 
     summary_meta = summarize(messages, elapsed, model_name)
     distinct_families = sorted(
@@ -206,33 +221,38 @@ def main(topic):
     model_name = getattr(model, "model_name", None) or getattr(model, "model", None) or str(model)
     start_time = time.monotonic()
 
-    try:
-        with open_sandbox() as backend:
-            backend.execute(f"mkdir -p {WORKDIR}/research/notes {WORKDIR}/report")
-            upload(
-                backend,
-                {
-                    VALIDATOR_PATH: VALIDATOR_SOURCE.read_bytes(),
-                    FINALIZER_PATH: FINALIZER_SOURCE.read_bytes(),
-                },
-            )
-            agent = build_lead_agent(backend, model)
-            prompt = build_prompt(topic)
-            result = agent.invoke(
-                {"messages": [{"role": "user", "content": prompt}]},
-                config={"recursion_limit": 1000},
-            )
-            elapsed = time.monotonic() - start_time
-            messages = result.get("messages", []) if isinstance(result, dict) else []
-            saved_report = save_outputs(backend, topic, messages, elapsed, model_name)
-            print(f"SUCCESS: Report saved to {saved_report}")
-            return 0
-    except RuntimeError as exc:
-        print(f"FAILED: {exc}", file=sys.stderr)
-        return 1
-    except Exception as exc:
-        print(f"FAILED with unexpected error: {type(exc).__name__}: {exc}", file=sys.stderr)
-        return 1
+    for attempt in range(1, 3):
+        try:
+            with open_sandbox() as backend:
+                backend.execute(f"mkdir -p {WORKDIR}/research/notes {WORKDIR}/report")
+                upload(
+                    backend,
+                    {
+                        VALIDATOR_PATH: VALIDATOR_SOURCE.read_bytes(),
+                        FINALIZER_PATH: FINALIZER_SOURCE.read_bytes(),
+                    },
+                )
+                agent = build_lead_agent(backend, model)
+                prompt = build_prompt(topic)
+                result = agent.invoke(
+                    {"messages": [{"role": "user", "content": prompt}]},
+                    config={"recursion_limit": 1000},
+                )
+                elapsed = time.monotonic() - start_time
+                messages = result.get("messages", []) if isinstance(result, dict) else []
+                saved_report = save_outputs(backend, topic, messages, elapsed, model_name)
+                print(f"SUCCESS: Report saved to {saved_report}")
+                return 0
+        except RuntimeError as exc:
+            print(f"FAILED: {exc}", file=sys.stderr)
+            if attempt == 2:
+                return 1
+        except Exception as exc:
+            print(f"Attempt {attempt} failed with {type(exc).__name__}: {exc}", file=sys.stderr)
+            if attempt == 2:
+                print(f"FAILED with unexpected error: {type(exc).__name__}: {exc}", file=sys.stderr)
+                return 1
+            time.sleep(5)
 
 
 if __name__ == "__main__":
