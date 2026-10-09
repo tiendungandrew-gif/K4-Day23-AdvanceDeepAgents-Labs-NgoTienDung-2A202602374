@@ -42,15 +42,20 @@ Follow this strict step-by-step procedure:
 1. PLANNING:
    Use `write_todos` to create an initial plan. Break the main topic down into at least 3 distinct, independent sub-questions (N >= 3, e.g. foundational concepts, modern architectures/techniques, benchmarks/applications).
 
-2. DELEGATION (Subagent calls >= 3):
-   Delegate each sub-question to the `researcher` subagent using the `task` tool (delegate in parallel).
-   IMPORTANT: A subagent sees ONLY your delegation message! You MUST provide:
+2. DELEGATION (Subagent calls >= 3, MANDATORY MULTI-SOURCE):
+   Delegate each sub-question to the `researcher` subagent using the `task` tool (delegate in parallel, at least 3 calls).
+   CRITICAL FOR RUBRIC 2.2: You MUST ensure sources from at least 3 distinct families ('arxiv', 'hf-daily' or 'hf-search', and 'web') are collected!
+   Specifically, assign:
+   - At least one researcher sub-question focusing on `arxiv_search`
+   - At least one researcher sub-question focusing on Hugging Face (`hf_search_papers` and `hf_daily_papers`)
+   - At least one researcher sub-question focusing on web exploration (`web_search` and `web_fetch`)
+   A subagent sees ONLY your delegation message! You MUST provide:
    - The main research topic and the specific sub-question assigned to it.
    - The exact output notes file path: `{NOTES_DIR}/01-<subtopic-slug>.md`, `{NOTES_DIR}/02-...md`, `{NOTES_DIR}/03-...md`.
-   - The required notes structure and the instruction to gather from diverse sources (`arxiv`, `hf-daily`, `hf-search`, `web`).
+   - The target source tools to use.
 
 3. REVIEW NOTES:
-   Review what the researchers return. Use `read_file` or `ls` on `{NOTES_DIR}` to ensure all notes files are present and contain substantive evidence.
+   Review what the researchers return. Use `read_file` or `ls` on `{NOTES_DIR}` to ensure all notes files are present and contain substantive evidence from diverse families.
 
 4. MERGE SOURCES:
    Compile all unique sources from the notes files into `{SOURCES_PATH}` as a JSON list:
@@ -60,7 +65,7 @@ Follow this strict step-by-step procedure:
    - `arxiv` sources must have url `https://arxiv.org/abs/<id>`.
    - `hf-daily` and `hf-search` sources must have url `https://huggingface.co/papers/<id>`.
    - `web` sources have their original web URLs.
-   CRITICAL (RUBRIC 2.2): The sources MUST cover at least 3 distinct source families among `arxiv`, `hf-daily`, `hf-search`, and `web`. If fewer than 3 families are present, immediately delegate another researcher task to find papers in the missing family before writing the report!
+   CRITICAL (RUBRIC 2.2): The sources MUST cover AT LEAST 3 distinct source families among `arxiv`, `hf-daily`, `hf-search`, and `web` (e.g. at least one 'arxiv', at least one 'hf-search' or 'hf-daily', and at least one 'web'). If any of the 3 families is missing, delegate another researcher task immediately to find it before writing!
 
 5. WRITE REPORT BODY:
    Write the comprehensive survey into `{REPORT_PATH}` following REPORT_TEMPLATE.md:
@@ -74,8 +79,8 @@ Follow this strict step-by-step procedure:
      ## Trends and open problems (recent 2 years developments, open challenges [n])
    - Synthesise across papers and compare approaches; do NOT just list one paper per paragraph.
    - Every non-obvious claim or fact must carry an inline citation [n].
+   - MANDATORY: You MUST cite at least one source from EACH of the 3 families (arxiv, hf-*, web) in the text of the report. (Remember: `finalize_citations.py` drops any source that is not cited in the text, so you must cite all 3 families in the text!).
    - Cite only facts, models, and numbers present in the notes. Never invent citations or facts.
-   - Draw on at least 3 source families across the body.
    - DO NOT WRITE the `## References` section yourself! The finalizer script will generate it.
 
 6. FINALIZE CITATIONS:

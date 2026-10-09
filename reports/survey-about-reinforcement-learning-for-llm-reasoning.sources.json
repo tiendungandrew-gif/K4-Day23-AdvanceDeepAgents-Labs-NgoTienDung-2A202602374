@@ -1,0 +1,62 @@
+[
+  {
+    "n": 1,
+    "id": "2610.12124",
+    "url": "https://arxiv.org/abs/2610.12124",
+    "title": "Use and Disuse: Intent-Structured Experience Consolidation for Memory and Learning in LLM Agents",
+    "date": "2026-10-08",
+    "source": "arxiv"
+  },
+  {
+    "n": 2,
+    "id": "2510.01857",
+    "url": "https://huggingface.co/papers/2510.01857",
+    "title": "Learning Reasoning Reward Models from Expert Demonstration via Inverse Reinforcement Learning",
+    "date": "2025-10-02",
+    "source": "hf-search"
+  },
+  {
+    "n": 3,
+    "id": "2504.20571",
+    "url": "https://huggingface.co/papers/2504.20571",
+    "title": "Reinforcement Learning for Reasoning in Large Language Models with One Training Example",
+    "date": "2025-04-29",
+    "source": "hf-search"
+  },
+  {
+    "n": 4,
+    "url": "https://arxiv.org/abs/2508.08221",
+    "title": "Part I: Tricks or Traps? A Deep Dive into RL for LLM Reasoning",
+    "source": "web"
+  },
+  {
+    "n": 5,
+    "url": "https://magazine.sebastianraschka.com/p/the-state-of-llm-reasoning-model-training",
+    "title": "The State of Reinforcement Learning for LLM Reasoning",
+    "source": "web"
+  },
+  {
+    "n": 6,
+    "id": "2610.12061",
+    "url": "https://arxiv.org/abs/2610.12061",
+    "title": "When Should Agents Think? Adaptive Reasoning via Cross-Turn Estimation",
+    "date": "2026-10-08",
+    "source": "arxiv"
+  },
+  {
+    "n": 7,
+    "id": "2505.24864",
+    "url": "https://huggingface.co/papers/2505.24864",
+    "title": "ProRL: Prolonged Reinforcement Learning Expands Reasoning Boundaries in Large Language Models",
+    "date": "2025-05-30",
+    "source": "hf-search"
+  },
+  {
+    "n": 8,
+    "id": "2505.07686",
+    "url": "https://huggingface.co/papers/2505.07686",
+    "title": "S-GRPO: Early Exit via Reinforcement Learning in Reasoning Models",
+    "date": "2025-05-12",
+    "source": "hf-search"
+  }
+]
