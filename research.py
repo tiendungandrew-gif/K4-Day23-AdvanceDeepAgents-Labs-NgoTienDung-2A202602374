@@ -50,8 +50,10 @@ def build_prompt(topic):
         f"with inline citations [n]. MANDATORY: You must cite at least one source from 'arxiv', at least one from 'hf-search' or 'hf-daily', "
         f"and at least one from 'web' in the text of the report. Do NOT write the ## References section yourself.\n"
         f"5. Run `python3 {FINALIZER_PATH}` using `execute` to generate ## References and clean citations.\n"
-        f"6. Run `python3 {VALIDATOR_PATH}` using `execute` to verify citation validity until it prints OK.\n"
-        f"7. Delegate 3-5 factual claims to the `citation-checker` subagent using `task` to verify accuracy."
+        f"6. Check {SOURCES_PATH} to ensure it retains at least 3 source families ('arxiv', 'hf-daily' or 'hf-search', and 'web'). "
+        f"If any family is missing, add a citation to it in {REPORT_PATH} and re-run {FINALIZER_PATH}.\n"
+        f"7. Run `python3 {VALIDATOR_PATH}` using `execute` to verify citation validity until it prints OK.\n"
+        f"8. Delegate 3-5 factual claims to the `citation-checker` subagent using `task` to verify accuracy."
     )
 
 
@@ -108,13 +110,58 @@ def save_outputs(backend, topic, messages, elapsed, model_name, reports_dir=REPO
     if not sources_bytes or not sources_bytes.strip():
         raise RuntimeError(f"Sources file is missing or empty at {SOURCES_PATH}")
 
+    raw_sources_str = sources_bytes.decode("utf-8", errors="replace").strip()
     try:
-        sources_data = json.loads(sources_bytes.decode("utf-8"))
-    except (ValueError, UnicodeDecodeError) as exc:
-        raise RuntimeError(f"Invalid JSON in sources.json: {exc}") from exc
+        sources_data = json.loads(raw_sources_str)
+    except ValueError:
+        decoder = json.JSONDecoder()
+        pos = 0
+        all_items = []
+        while pos < len(raw_sources_str):
+            while pos < len(raw_sources_str) and raw_sources_str[pos].isspace():
+                pos += 1
+            if pos >= len(raw_sources_str):
+                break
+            try:
+                obj, end_idx = decoder.raw_decode(raw_sources_str, idx=pos)
+                if isinstance(obj, list):
+                    all_items.extend(obj)
+                elif isinstance(obj, dict):
+                    all_items.append(obj)
+                pos = end_idx
+            except ValueError:
+                next_bracket = -1
+                for i in range(pos + 1, len(raw_sources_str)):
+                    if raw_sources_str[i] in "[{":
+                        next_bracket = i
+                        break
+                if next_bracket != -1:
+                    pos = next_bracket
+                else:
+                    break
+
+        if all_items:
+            seen_urls = set()
+            deduped = []
+            for item in all_items:
+                if isinstance(item, dict) and item.get("url") and item["url"] not in seen_urls:
+                    seen_urls.add(item["url"])
+                    deduped.append(item)
+            sources_data = deduped
+        else:
+            raise RuntimeError(f"Invalid JSON in sources.json: {raw_sources_str[:200]}")
 
     if not isinstance(sources_data, list) or len(sources_data) == 0:
         raise RuntimeError("sources.json must be a non-empty list of source objects")
+
+    for idx, item in enumerate(sources_data, start=1):
+        if isinstance(item, dict):
+            item["n"] = idx
+            url = str(item.get("url") or "")
+            if "arxiv.org/abs/" in url:
+                item["source"] = "arxiv"
+            elif "huggingface.co/papers/" in url and item.get("source") not in ("hf-daily", "hf-search"):
+                item["source"] = "hf-search"
 
     summary_meta = summarize(messages, elapsed, model_name)
     distinct_families = sorted(

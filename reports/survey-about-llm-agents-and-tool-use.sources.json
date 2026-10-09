@@ -1,0 +1,49 @@
+[
+  {
+    "n": 1,
+    "id": "2309.07864",
+    "url": "https://arxiv.org/abs/2309.07864",
+    "title": "The Rise and Potential of LLM-Based Agents: A Survey",
+    "date": "2023-09-19",
+    "source": "arxiv"
+  },
+  {
+    "n": 2,
+    "id": "2406.11200",
+    "url": "https://huggingface.co/papers/2406.11200",
+    "title": "AvaTaR: Optimizing LLM Agents for Tool Usage via Contrastive Reasoning",
+    "date": "2024-06-17",
+    "source": "hf-search"
+  },
+  {
+    "n": 3,
+    "id": "2411.09523",
+    "url": "https://arxiv.org/html/2411.09523",
+    "title": "Navigating the Risks: A Survey of Security, Privacy, and Ethics Threats in LLM-Based Agents",
+    "date": "2024-11-14",
+    "source": "arxiv"
+  },
+  {
+    "n": 4,
+    "url": "https://www.evidentlyai.com/blog/llm-applications",
+    "title": "55 real-world LLM applications and use cases from top companies",
+    "date": "2024-07-15",
+    "source": "web"
+  },
+  {
+    "n": 5,
+    "id": "2401.06201",
+    "url": "https://huggingface.co/papers/2401.06201",
+    "title": "EASYTOOL: Enhancing LLM-based Agents with Concise Tool Instruction",
+    "date": "2024-01-11",
+    "source": "hf-search"
+  },
+  {
+    "n": 6,
+    "id": "2510.02271",
+    "url": "https://huggingface.co/papers/2510.02271",
+    "title": "InfoMosaic-Bench: Evaluating Multi-Source Information Seeking in Tool-Augmented Agents",
+    "date": "2025-10-02",
+    "source": "hf-search"
+  }
+]

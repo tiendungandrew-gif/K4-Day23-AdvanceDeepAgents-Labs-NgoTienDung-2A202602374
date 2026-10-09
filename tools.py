@@ -120,13 +120,16 @@ def arxiv_search(query: str, max_results: int = 10) -> str:
         }
 
         def _fetch():
-            with httpx.Client(timeout=30.0, follow_redirects=True) as client:
+            headers = {"User-Agent": "ResearchSurvey/1.0 (academic; mailto:survey@example.org)"}
+            with httpx.Client(timeout=30.0, follow_redirects=True, headers=headers) as client:
                 resp = client.get(ARXIV_URL, params=params)
                 resp.raise_for_status()
                 return resp.text
 
-        xml_text = with_retry(_fetch, attempts=5, base=2.0, cap=60.0)
-        _last_arxiv_time = time.monotonic()
+        try:
+            xml_text = with_retry(_fetch, attempts=5, base=4.0, cap=60.0)
+        finally:
+            _last_arxiv_time = time.monotonic()
 
         root = xml.etree.ElementTree.fromstring(xml_text)
         ns = {"atom": "http://www.w3.org/2005/Atom"}
